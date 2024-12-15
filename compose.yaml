@@ -1,0 +1,29 @@
+services:
+  unotes_db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_DB: ${NITRO_POSTGRES_DB}
+      POSTGRES_USER: ${NITRO_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${NITRO_POSTGRES_PASSWORD}
+    volumes:
+      - ./.db_data:/var/lib/postgresql/data
+    ports:
+      - ${NITRO_POSTGRES_PORT}:${NITRO_POSTGRES_PORT}
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 30s
+      timeout: 30s
+      retries: 3
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      - '80:80'
+    volumes:
+      - ./pgadmin_data:/root/.pgadmin:rw
+    depends_on:
+      unotes_db:
+        condition: service_healthy
